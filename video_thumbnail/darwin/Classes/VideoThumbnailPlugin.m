@@ -1,6 +1,12 @@
 #import "VideoThumbnailPlugin.h"
 #import <AVFoundation/AVFoundation.h>
+
+//#import <UIKit/UIKit.h>
+#if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
+#elif TARGET_OS_MAC
+#import <Cocoa/Cocoa.h>
+#endif
 
 #if __has_include("webp/decode.h") && __has_include("webp/encode.h") && __has_include("webp/demux.h") && __has_include("webp/mux.h")
 #import "webp/decode.h"
@@ -112,16 +118,41 @@
     }
     
     if( format <= 1 ) {
-        UIImage *thumbnail = [UIImage imageWithCGImage:cgImage];
+        // UIImage *thumbnail = [UIImage imageWithCGImage:cgImage];
         
+        // CGImageRelease(cgImage);  // CGImageRef won't be released by ARC
+        
+        // if( format == 0 ) {
+        //     CGFloat fQuality = ( CGFloat) ( quality * 0.01 );
+        //     return UIImageJPEGRepresentation( thumbnail, fQuality );
+        // } else {
+        //     return UIImagePNGRepresentation( thumbnail );
+        // }
+
+#if TARGET_OS_IPHONE
+        UIImage *thumbnail = [UIImage imageWithCGImage:cgImage];
         CGImageRelease(cgImage);  // CGImageRef won't be released by ARC
         
-        if( format == 0 ) {
-            CGFloat fQuality = ( CGFloat) ( quality * 0.01 );
-            return UIImageJPEGRepresentation( thumbnail, fQuality );
+        if (format == 0) {
+          CGFloat fQuality = (CGFloat)(quality * 0.01);
+          return UIImageJPEGRepresentation(thumbnail, fQuality);
         } else {
-            return UIImagePNGRepresentation( thumbnail );
+          return UIImagePNGRepresentation(thumbnail);
         }
+#elif TARGET_OS_OSX
+        NSImage *thumbnail = [[NSImage alloc] initWithCGImage:cgImage size:NSZeroSize];
+        CGImageRelease(cgImage);  // CGImageRef won't be released by ARC
+        
+        NSBitmapImageRep *imgRep = [[NSBitmapImageRep alloc] initWithCGImage:[thumbnail CGImageForProposedRect:NULL context:NULL hints:nil]];
+        
+        if (format == 0) {
+          CGFloat fQuality = (CGFloat)(quality * 0.01);
+          NSDictionary *imageProps = @{NSImageCompressionFactor: @(fQuality)};
+          return [imgRep representationUsingType:NSBitmapImageFileTypeJPEG properties:imageProps];
+        } else {
+          return [imgRep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
+        }
+#endif
     } else {
         CGColorSpaceRef colorSpace = CGImageGetColorSpace(cgImage);
         if (CGColorSpaceGetModel(colorSpace) != kCGColorSpaceModelRGB) {

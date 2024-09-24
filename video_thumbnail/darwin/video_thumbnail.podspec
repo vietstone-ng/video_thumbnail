@@ -17,9 +17,12 @@ A new flutter plugin project.
   s.pod_target_xcconfig = {
     'USER_HEADER_SEARCH_PATHS' => '$(inherited) ${PODS_ROOT}/libwebp/**'
   }
-  s.dependency 'Flutter'
   s.dependency 'libwebp'
 
+  s.ios.dependency 'Flutter'
   s.ios.deployment_target = '8.0'
+
+  s.osx.dependency 'FlutterMacOS'
+  s.osx.deployment_target = '10.10'
 end
 

@@ -50,6 +50,10 @@ flutter:
         pluginClass: VideoThumbnailPlugin
       ios:
         pluginClass: VideoThumbnailPlugin
+        sharedDarwinSource: true
+      macos:
+        pluginClass: VideoThumbnailPlugin
+        sharedDarwinSource: true
       web:
         default_package: video_thumbnail_web
 
